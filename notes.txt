@@ -1,0 +1,30 @@
+head -n5 sieve.cpp // prints first 5 lines
+tail -n5 sieve.cpp // prints last 5 lines
+
+=== === === ===
+chmod u-wxr // Change modifications for user, write execute and read. o is other, g is group
+chmod 766 // binary of rwx, 4 being 100 so only r.
+
+ls -l:
+
+-rwxrwxrwx 1 ryan ryan 0 Jan 24 11:47 notes.txt
+^ perms    
+
+Use -a to see hidden files.
+
+
+/////////////
+
+C vs Java: Java compile once run anywhere, C write once compile anywhere
+
+#include "stdbool.h"
+#include "stdio.h"
+
+We can use implicit casts when we are going from smaller to larger (int -> float), because there will be no issue. The problem is when you cast down, and run the risk of overflowing.
+
+unsigned int var3 = -1 // Max unsigned integer
+
+#define PI 3.14 // Preprocessor directive to make a constant by macro. They aren't checked! They're just text replacements
+
+float pi = PI;
+
