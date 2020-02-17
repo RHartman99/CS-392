@@ -1,10 +1,10 @@
+#!/bin/bash
 ###############################################################################
 # Author: Ryan Hartman
-# Date: 1/7/20
+# Date: 2/7/20
 # Pledge: I pledge my honor that I have abided by the Stevens Honor System.
 # Description: Creates a recycling bin that can be purged and listed.
 ###############################################################################
-#!/bin/bash
 
 readonly JUNK_DIRECTORY="$HOME/.junk"
 help_flag=0
@@ -31,6 +31,7 @@ while getopts ":hlp" option; do
         p)  purge_flag=1
             ;;
         ?)  printf "Error: Unknown option '-%s'.\n" $OPTARG >&2 #Print to standard error the unknown arg
+            help_msg
             exit 1
             ;;
     esac
@@ -44,32 +45,30 @@ if [ $flags_sum -gt 1 ]; then
      exit 1
 fi
 
-declare -a file_array
-index=0
-shift "$((OPTIND-1))" # Shift back one because we need the first argument.
-for f in $@; do
-    file_array[$index]=$f
-    (( ++index ))
-done
-
 # Make ~/.junk if it doesn't exist
 if [ ! -d "$JUNK_DIRECTORY" ]; then
     mkdir "$JUNK_DIRECTORY"
 fi
 
+files=0
+shift "$((OPTIND-1))" # Shift back one because we need the first argument.
+for f in $@; do
+    (( ++files ))
+done
+
 # Check flags to error check and apply operations
-if [ $flags_sum -eq 1 ] && [ $index -gt 0 ]; then
-    printf "Error: Too many options.\n">&2
+if [ $flags_sum -eq 1 ] && [ $files -gt 0 ]; then
+    printf "Error: Too many options enabled.\n">&2
     help_msg
     exit 1
-elif [ $flags_sum -eq 0 ] && [ $index -eq 0 ]; then
+elif [ $flags_sum -eq 0 ] && [ $files -eq 0 ]; then
     help_msg
     exit 0
 elif [ $help_flag -eq 1 ]; then
     help_msg
     exit 0
 elif [ $list_flag -eq 1 ]; then
-    ls -l "$JUNK_DIRECTORY"
+    ls -lAF "$JUNK_DIRECTORY"
     exit 0
 elif [ $purge_flag -eq 1 ]; then
     rm -R "$JUNK_DIRECTORY"
@@ -77,15 +76,22 @@ elif [ $purge_flag -eq 1 ]; then
     exit 0
 fi
 
+index=0
+for f in $@; do
+    if [ ! -f "$f" ] && [ ! -d "$f" ]; then
+        printf "Warning: '$f' not found.\n"
+    else
+        file_array[$index]=$f
+        (( ++index ))
+    fi
+done
+
 for f in $file_array; do
-    cp "$f" "$JUNK_DIRECTORY"
-    rm "$f"
+    cp -r "$f" "$JUNK_DIRECTORY"
+    rm -rf "$f"
 done
 
 exit 0
 
-
-# Should it error and go to standard error if no arguments are provided?
-# What error message if we try to recycle but provide arguments?
-# What if the file is not found?
-# The permissions are different. Does that matter?
+# I have asterisks after them. Is this allowed?
+# What if no files are found? error?

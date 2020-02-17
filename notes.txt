@@ -28,3 +28,12 @@ unsigned int var3 = -1 // Max unsigned integer
 
 float pi = PI;
 
+////////
+
+To swap we need to know:
+
+The indices
+The size of the data type
+Swap a bunch of char* with each data type, swapping
+every byte until swapping all the contents
+
