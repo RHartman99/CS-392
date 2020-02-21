@@ -40,6 +40,26 @@ typedef enum
  * Ensures there are no memory leaks with valgrind. 
  */
 
+void convert_to_ints(char **a, int *b, int length)
+{
+  for (int i = 0; i < length; i++)
+  {
+    int val;
+    sscanf(*(a++), "%d", &val);
+    *(b++) = val;
+  }
+}
+
+void convert_to_dbls(char **a, double *b, int length)
+{
+  for (int i = 0; i < length; i++)
+  {
+    double val;
+    sscanf(*(a++), "%lf", &val);
+    *(b++) = val;
+  }
+}
+
 void print_usage(char *cmd)
 {
   printf("Usage: %s [-i|-d] [filename]\n", cmd);
@@ -47,6 +67,22 @@ void print_usage(char *cmd)
   printf("    -d: Specifies the file contains doubles.\n");
   printf("    filename: The file to sort.\n");
   printf("    No flags defaults to sorting strings.\n");
+}
+
+void print_array(void *arr, elem_t type, int length)
+{
+  int *int_arr = (int *)arr;
+  double *dbl_arr = (double *)arr;
+  char **str_arr = (char **)arr;
+  for (int i = 0; i < length; i++)
+  {
+    if (type == STRING)
+      printf("%s\n", *(str_arr++));
+    else if (type == INT)
+      printf("%d\n", *(int_arr++));
+    else
+      printf("%lf\n", *(dbl_arr++));
+  }
 }
 
 int main(int argc, char **argv)
@@ -63,7 +99,7 @@ int main(int argc, char **argv)
       d_flag = 1;
       break;
     case '?':
-      fprintf(stderr, "Error: Unknown option '%c' received.\n", optopt);
+      fprintf(stderr, "Error: Unknown option '-%c' received.\n", optopt);
       print_usage(argv[0]);
       return EXIT_FAILURE;
     }
@@ -87,30 +123,57 @@ int main(int argc, char **argv)
     fprintf(stderr, "Error: Cannot open '%s'. %s.\n", argv[optind], strerror(errno));
     return EXIT_FAILURE;
   }
+
+  // Parse the file
   char **strings = (char **)malloc(MAX_ELEMENTS * sizeof(char *));
   char **cur = strings;
-  char *buf = (char *)malloc(MAX_STRLEN * sizeof(char) + 1);
+  char *buf = (char *)malloc(MAX_STRLEN * sizeof(char) + 2);
   int length = 0;
-  while (fgets(buf, MAX_STRLEN, fp) != NULL)
+  while ((fgets(buf, MAX_STRLEN + 2, fp) != NULL) && length < MAX_ELEMENTS)
   {
-    *(buf + strlen(buf)) = '\0';
+    char *eoln = strchr(buf, '\n');
+    if (eoln == NULL)
+      buf[MAX_STRLEN] = '\0';
+    else
+      *eoln = '\0';
     *cur = (char *)malloc(strlen(buf) * sizeof(char) + 1);
-    *cur = buf;
-    printf("%s", *cur);
+    strcpy(*cur, buf);
     length++;
     cur++;
   }
   fclose(fp);
 
+  // Given the flag, convert and sort the file
   if (i_flag == 1)
   {
+    int *arr = (int *)malloc(length * sizeof(int));
+    convert_to_ints(strings, arr, length);
+    quicksort(arr, length, sizeof(int), int_cmp);
+    print_array(arr, INT, length);
+    free(arr);
   }
   else if (d_flag == 1)
   {
+    double *arr = (double *)malloc(length * sizeof(double));
+    convert_to_dbls(strings, arr, length);
+    quicksort(arr, length, sizeof(double), dbl_cmp);
+    print_array(arr, DOUBLE, length);
+    free(arr);
   }
   else
   {
+    quicksort(strings, length, sizeof(char *), str_cmp);
+    print_array(strings, STRING, length);
   }
+
+  // Cleanup (freeing heap)
+  cur = strings;
+  for (int i = 0; i < MAX_ELEMENTS; i++)
+  {
+    free(*(cur++));
+  }
+  free(strings);
+  free(buf);
 
   return EXIT_SUCCESS;
 }

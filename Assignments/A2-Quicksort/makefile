@@ -1,6 +1,9 @@
-# Name of executable and its dependencies
+###############################################################################
+# Author: Ryan Hartman
+# Date: 2/7/20
+# Pledge: I pledge my honor that I have abided by the Stevens Honor System.
+###############################################################################
 sort: sort.o quicksort.o
-# Must be tab:
 	gcc sort.o quicksort.o -o sort 
 sort.o: sort.c
 	gcc -Wall -Werror -pedantic-errors -c sort.c

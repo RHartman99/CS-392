@@ -78,9 +78,9 @@ int dbl_cmp(const void *a, const void *b)
  */
 int str_cmp(const void *a, const void *b)
 {
-    char *x = (char *)a;
-    char *y = (char *)b;
-    return strcmp(x, y);
+    char **x = (char **)a;
+    char **y = (char **)b;
+    return strcmp(*x, *y);
 }
 
 /**
@@ -94,7 +94,6 @@ int str_cmp(const void *a, const void *b)
  */
 static void swap(void *a, void *b, size_t size)
 {
-    // printf("Swapping %d with %d\n", *((int *)a), *((int *)b));
     char *x = (char *)a;
     char *y = (char *)b;
     char temp;
@@ -107,7 +106,6 @@ static void swap(void *a, void *b, size_t size)
         *(new_x++) = *(y++);
         *(new_y++) = temp;
     }
-    // printf("Got %d and %d\n=======\n", *((int *)a), *((int *)b));
 }
 
 /**
@@ -127,7 +125,7 @@ static int lomuto(void *array, int left, int right, size_t elem_sz,
     int s = left;
     for (int i = left + 1; i <= right; i++)
     {
-        if (comp((char *)array + i * elem_sz, p) == -1)
+        if (comp((char *)array + i * elem_sz, p) < 0)
         {
             s++;
             swap((char *)array + i * elem_sz, (char *)array + s * elem_sz, elem_sz);
